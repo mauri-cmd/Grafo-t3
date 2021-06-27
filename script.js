@@ -908,6 +908,127 @@ function estadoinicial(automata) {
     return automata2;
   }
 }
+transformarAFDaER(1);
+function transformarAFDaER(automata){
+    var arista = edges.get();
+//////////////////////////////////////////////////condicion estado inicial
+  var qantiguo=estadoinicial(automata);
+  var entradasinicial = arista.filter(arista => arista.to == qantiguo.id);
+  if(entradasinicial.length!=0){
+     var qinicialnuevo=añadirestadoinicial();
+  conectar(qinicialnuevo,qantiguo.id,"ε");
+  nodes.updateOnly({ id: qantiguo.id,  color:"#97C2FC" }); 
+  }
+  /////////////////////////////////////////////////condicion estados finales
+    var estadosfinales=estadosfinalesvector(automata);
+  var cantefinalesantes=estadosfinales.length;
+  var añadirnuevofinal=0;
+  var cambiarcoloresfinales=0;
+  for(let i=0;i<estadosfinales.length;i++){
+      var salidasfinales= arista.filter(arista => arista.from == estadosfinales[i].id);
+    console.log(estadosfinales);
+    console.log(salidasfinales.length);
+if(salidasfinales.length!=0){
+  if(añadirnuevofinal==0){
+    var qfinalnuevo=añadirestadofinal();
+   añadirnuevofinal=1;
+  }
+  cambiarcoloresfinales=1;
+    conectar(estadosfinales[i].id,qfinalnuevo,"ε");
+}
+  }
+  if(cambiarcoloresfinales==1){
+     for(let i=0;i<estadosfinales.length;i++){
+                 nodes.updateOnly({ id: estadosfinales[i].id,  color:"#97C2FC" });
+     }
+
+  }
+  operaciontransformarAFD=1;
+/////////////////////////////////////////////////////
+//concatenacionER(cantefinalesantes);
+  
+}
+function siguientes(intermedio){
+  var aristas;
+  for(let i=0;i<intermedio.length-3;i++){
+   aristas=edges.get();
+   var aux=aristas.filter(aristas => aristas.from == intermedio[i].id&&aristas.from!=aristas.to);
+  console.log(i,aux);
+    util(5,intermedio[i].id,aux,0);
+        
+
+ 
+  } 
+  
+ }
+function util(estadoi,intermedio,cantidadfinales,i){
+  console.log("////////////////////////intermedio "+intermedio);
+  
+  var final=cantidadfinales[i].to;
+  console.log("hasta "+final);
+  var aristas=edges.get();
+  console.log(aristas);
+  var primera=aristas.filter(aristas => aristas.from == estadoi);
+      for(let i=0;i<primera.length;i++){
+        if(primera[i].to=intermedio){
+          primera=primera[i];
+          break;
+        }
+      }
+
+  var prueba = aristas.filter(aristas => aristas.from == estadoi);
+  console.log(prueba);
+  
+  
+console.log("primera arista "+primera.label);
+  var expresion=primera.label;
+    var aristasintermedio = aristas.filter(aristas => aristas.from == intermedio);
+    for(let i=0;i<aristasintermedio.length;i++){
+      if(aristasintermedio[i].from==aristasintermedio[i].to){
+        expresion=expresion+"("+aristasintermedio[i].label+"*"+")";
+      }
+    }
+   var aristasentrante = aristas.filter(aristas => aristas.to == intermedio&&aristas.from!=estadoi&&aristas.from==final);
+   console.log(aristasentrante);
+  if(aristasentrante.length!=0){
+    for(let i=0;i<aristasintermedio.length;i++){
+    for(let j=0;j<aristasentrante.length;j++){
+      if(aristasintermedio[i].to==final&&aristasentrante[j].to==intermedio&&aristasentrante[j].to!=aristasentrante[j].from){
+       console.log(aristasintermedio[i]);
+        expresion=expresion+"("+aristasintermedio[i].label+aristasentrante[j].label+")*";
+        break;
+      }
+    }
+      
+      console.log(expresion);
+    }
+  }
+ 
+ for(let i=0;i<aristasintermedio.length;i++){
+      if(aristasintermedio[i].to==final){
+        expresion=expresion+"("+aristasintermedio[i].label+")";
+      }
+      console.log(expresion);
+    }
+   
+    
+    if(i<cantidadfinales.length-1){
+      
+      util(estadoi,intermedio,cantidadfinales,i+1);
+    }else{
+      borrarestadoconaristas(intermedio);
+      console.log("se borra "+intermedio);
+    } 
+      conectar(estadoi,final,expresion);
+}
+function reducirER(label){
+  var labelgeneral="ε";
+  label = label.replace(new RegExp(labelgeneral,"g") ,"");
+  for(let i=0;i<label.length;i++){
+  label=label.replace("()","");}
+  console.log(label);
+  return label;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////
 var network = new vis.Network(container, data, xoptions);
 network.setOptions(xoptions);
