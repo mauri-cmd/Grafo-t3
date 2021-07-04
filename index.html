@@ -8,7 +8,7 @@
 
     
  
-    <title>Trabajo 3 AFD y AP</title>
+    <title>Trabajo 3 ER</title>
 
    
     <!-- Import the webpage's stylesheet -->
@@ -20,19 +20,26 @@
     integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
     crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="vis-network.js"></script>
     <script src="plog.js"></script>
     <script src="sweetalert2.all.min.js"></script>
     <!-- Import the webpage's javascript file -->
     <script src="/script.js" defer></script>
   </head>
-  <body  style="background-color:#00256E;">
-  <div class="d-flex justify-content-center  mt-3 ">
-    
+  <body  style="background-color:#008080;">
+    <body>
+
+    <header>
+        <nav>
+            <input type="checkbox" id="ckbox">
+            
+            <h1>Expresiones Regulares</h1>
+        </nav>
+    </header>
+  <div class="d-flex justify-content-center ">
     <!---en donde se muestran los automatas--->
-    <div id="mynetwork" class="mt-1 me-1 ms-1"></div>
-  </div> 
-    <div class="ms-5 me-5">
+    <div class="d-flex flex-column bd-highlight mb-3">
       
       <input
       type="button"
@@ -43,22 +50,30 @@
       <input
       type="button"
       class="btn btn-success btn-lg mb-3 mt-3 "
-      value="Evaluar datos"
-      onclick="inputmadre()"
+      value="Obtener ER"
+      onclick="botonER()"
     />
    <input
       type="button"
-      class="btn btn-primary btn-lg mb-3 mt-3 "
+      class="btn btn-danger btn-lg mb-3 mt-3 "
       value="Borrar automata"
       onclick="borrar()"
     />
     <input
       type="button"
-      class="btn btn-success btn-lg mb-3 mt-3 "
+      class="btn btn-info btn-lg mb-3 mt-3 "
       value="Descargar log"
       onclick="archivo()"
     />
     <div id="download" class=""></div>
       </div>
+    <div id="mynetwork" class="me-1 ms-1"></div>
+    
+  </div> 
+    
   </body>
+        <footer>
+        <p>Grupo 4</p>
+    </footer>
+</body>
 </html>
