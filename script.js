@@ -1,12 +1,13 @@
 var nodes,edges,ID = 5;
 var cantidadautomatas = 1;
 var estados,
-  alfabeto,
+  alfabeto=3,
   transicion,
   inicial,
   finales,
   operacionunir = 0,
-  operacionconcatenacion = 0;
+  operacionconcatenacion = 0,
+operaciontransformarAFD=0;
 var nodosf1 = [];
 var nodosf2 = [];
 var automata1 = [nodosf1];
@@ -30,29 +31,25 @@ var data = {
 };
 nodes = new vis.DataSet([
   { id: 1, label: "q1", color: "#C2FABC" },
-  { id: 2, label: "q2", color: "#fabcbc" },
-  { id: 3, label: "q3", color: "#97C2FC" },
-  { id: 4, label: "q4", color: "#fabcbc" },
+  { id: 2, label: "q2", color: "#97C2FC" },
+  { id: 3, label: "q3", color: "#fabcbc" },
+  { id: 4, label: "q4", color: "#fabcbc"  },
 ]);
 var o_nodes = new vis.DataSet(nodes);
 //crear un array con las aristas
 
 //NOTA PARA TODOS:EL ID DEL EDGE CORRESPONDE A "DESDE - CONTADOR DE ARISTAS PARA ESE NODO"
 edges = new vis.DataSet([
-  { id: "1-1", from: 1, to: 2, label: "a" },
+ { id: "1-1", from: 1, to: 2, label: "a" },
   { id: "1-2", from: 1, to: 3, label: "b" },
   { id: "1-3", from: 1, to: 1, label: "c" },
-  { id: "2-1", from: 2, to: 2, label: "a" },
-  { id: "2-2", from: 2, to: 1, label: "b" },
-  { id: "2-3", from: 2, to: 4, label: "c" },
+  { id: "2-1", from: 2, to: 2, label: "a,b" },
+  { id: "2-2", from: 2, to: 4, label: "c" },
   { id: "3-1", from: 3, to: 3, label: "a" },
-  { id: "3-2", from: 3, to: 4, label: "b" },
+  { id: "3-2", from: 3, to: 4, label: "b,c" },
   { id: "4-1", from: 4, to: 4, label: "c" },
   { id: "4-2", from: 4, to: 3, label: "a,b" },
   
-  
-   
-
 ]);
 
 data = {
@@ -60,7 +57,7 @@ data = {
   edges: edges
 };
 qinicial1=estadoinicial(1);
-
+verificar(1);
 function automatainicial() {
   plog.info("Se muestran opciones para elegir que automata se creara ");
   Swal.fire({
@@ -76,15 +73,13 @@ function automatainicial() {
       plog.info("Se escoge crear AFD ");
       crearAFD();
     } else if (result.isDenied) {
-      plog.info("Se escoge crear AFND");
-      crearAFND();
     }
   });
 }
 
 async function crearAFD() {
   //(async() => {
-  if (cantidadautomatas == 2) {
+  if (cantidadautomatas == 1) {
     const Toast = Swal.mixin({
       toast: true,
       position: "top",
@@ -111,11 +106,13 @@ async function crearAFD() {
       console.log(estados);
       estadosfinales(valor - 1).then(valor => {
         var q = añadirestadoinicial();
-        for (let i = 0; i < finales; i++) {
-          añadirestadofinal();
-        }
+        
+        console.log(valor);
         for (let i = 0; i < estados - 1 - finales; i++) {
           añadirestadonormal();
+        }
+        for (let i = 0; i < finales; i++) {
+          añadirestadofinal();
         }
         estados = estados - 0;
         agregar(alfabeto, q, estados);
@@ -125,10 +122,12 @@ async function crearAFD() {
         if (cantidadautomatas == 2) {
           qinicial2 = q;
         }
+      
       });
     });
   });
 plog.info("Se crea AFD");
+  
   
 }
 //se escoje la cantidad total del alfabeto en el automata
@@ -213,6 +212,8 @@ async function input() {
         2: "2"
       });
     }, 100);
+    
+
   });
   const { value: opcion } = await Swal.fire({
     title: "Elegir automata el cual se va evaluar:",
@@ -259,7 +260,7 @@ async function estadostotales() {
     input: "range",
     inputAttributes: {
       min: 2,
-      max: 5,
+      max: 100,
       step: 1
     },
     inputValue: 2
@@ -296,6 +297,7 @@ async function crearopciones(qinicial) {
   }
   return options;
 }
+/*
 async function agregar(alfabeto, q, estados) {
   
   var f = q;
@@ -316,7 +318,9 @@ async function agregar(alfabeto, q, estados) {
       });
   });
 }
-async function estadosfinales1(q, alfabeto, opciones) {
+*/
+
+/*async function estadosfinales1(q, alfabeto, opciones) {
   plog.info("Se muestran opciones para conectar afd ");
   var n = nodes.getIds();
   var titulo = "desde q" + q + " hasta:";
@@ -378,8 +382,48 @@ async function estadosfinales1(q, alfabeto, opciones) {
     conectar(q, e, "e");
   }
 }
-//borra el automata completo
+*/
+
+async function agregar(alfabeto, q, estados){
+  var f = q;
+  var opciones = crearopciones(q);
+  for (let i = 0; i < estados; i++){
+    for (let j = 0; j < alfabeto; j++){
+         await estadosfinales1(i+1,j+1, opciones);
+    }
+  }
+  verificar(1);
+}
+async function estadosfinales1(q, alfabeto, opciones){
+  var alfabet=["a","b","c","d","e"];
+  plog.info("Se muestran opciones para conectar afd ");
+  var n = nodes.getIds();
+  var titulo = " desde q " + q + " hasta:";
+  console.log(n);
+  if (cantidadautomatas == 1) {
+    var cont = 1;
+  } else {
+    for (let i = 1; i < nodes.get().length; i++) {
+      if (nodes.get(n[i]).color == "#C2FABC") {
+        var encontrado = nodes.get(n[i]);
+        cont = encontrado.id;
+      }
+    }
+  }
+
+  
+
+  const { value: a } = await Swal.fire({
+    title: "leyendo " + alfabet[alfabeto-1] + titulo,
+    allowOutsideClick: false,
+    input: "select",
+    inputOptions: opciones
+  });
+  conectar(q, a, alfabet[alfabeto-1]);
+}
+
 async function borrar() {
+  
   var borrar = nodes.getIds();
   if (borrar.length == 0) {
     plog.warn(
@@ -388,100 +432,10 @@ async function borrar() {
     Swal.fire({
       icon: "warning",
       title: "Error...",
-      text: "Para eliminar los automatas,agreguelos primero"
+      text: "Para eliminar, debe existir un automata "
     });
     return;
-  }
-  const inputOptions = new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        1: "1",
-        2: "2",
-        3: "Ambos"
-      });
-    }, 100);
-  });
-  const { value: color } = await Swal.fire({
-    title: "Borrar automata:",
-    input: "radio",
-    allowOutsideClick: false,
-    inputOptions: inputOptions,
-    showCancelButton: true,
-    inputValidator: value => {
-      if (!value) {
-        return "Seleccione automata para borrar o cancele la operacion";
-      } else if (value == 1) {
-        if (qinicial2 == undefined || (value == 1 && operacionunir == 1)) {
-          value = 3;
-        } else {
-          plog.info("Se elimina automata 1");
-
-          var diferencia = qinicial2 - qinicial1;
-          console.log(diferencia);
-
-          for (var i = 0; i < diferencia; i++) {
-            nodes.remove(borrar[i]);
-            var aristas = edges.get();
-            var contadoraristas = aristas.filter(
-              aristas => aristas.from == borrar[i]
-            );
-            var x = contadoraristas.length;
-            while (x != 0) {
-              edges.remove(contadoraristas[x - 1].id);
-              x = x - 1;
-            }
-            contadoraristas = aristas.filter(
-              aristas => aristas.to == borrar[i]
-            );
-            x = contadoraristas.length;
-            while (x != 0) {
-              edges.remove(contadoraristas[x - 1].id);
-              x = x - 1;
-            }
-          }
-          cantidadautomatas--;
-        }
-      } else if (value == 2) {
-        if (cantidadautomatas < 2) {
-          plog.warn(
-            "Se intento eliminar un automata que no existe,se cancela la operacion y se manda alerta "
-          );
-          Swal.fire({
-            icon: "warning",
-            title: "Error...",
-            text: "El automata seleccionado no existe"
-          });
-          return;
-        } else {
-          plog.info("Se elimina automata 2");
-          var qinicial = qinicial2;
-          for (var i = qinicial; i <= ID - 1; i++) {
-            var aristas = edges.get();
-            var contadoraristas = aristas.filter(
-              aristas => aristas.from == nodes.get(i).id
-            );
-            var x = contadoraristas.length;
-            while (x != 0) {
-              edges.remove(contadoraristas[x - 1].id);
-              x = x - 1;
-            }
-            contadoraristas = aristas.filter(
-              aristas => aristas.to == nodes.get(i).id
-            );
-            x = contadoraristas.length;
-            while (x != 0) {
-              edges.remove(contadoraristas[x - 1].id);
-              x = x - 1;
-            }
-            nodes.remove(nodes.get(i).id);
-          }
-          console.log(edges.get());
-          cantidadautomatas--;
-          ID = qinicial;
-        }
-      }
-      if (value == 3) {
-        plog.info("Se eliminan todos los automatas existentes ");
+  }else{
 
         for (var i = 0; i < borrar.length; i++) {
           nodes.remove(borrar[i]);
@@ -502,9 +456,10 @@ async function borrar() {
           cantidadautomatas = 0;
           operacionunir = 0;
           operacionconcatenacion = 0;
+          operaciontransformarAFD=0;
         }
       }
-      if (value != 4) {
+     
         const Toast = Swal.mixin({
           toast: true,
           position: "top",
@@ -519,13 +474,13 @@ async function borrar() {
 
         Toast.fire({
           icon: "success",
-          title: "Se han borrado los automatas seleccionados"
+          title: "Borrados todos los estados y transiciones"
         });
-        plog.info("Se borra automata seleccionado ");
-      }
-    }
-  });
-}
+        plog.info("Se borra automata ");
+      
+
+ }
+
 function añadirestadoinicial() {
   plog.info("Se añade un estado inicial");
   var Label = "q";
@@ -539,6 +494,7 @@ function añadirestadofinal() {
   var Label = "q";
   nodes.add([{ id: ID, label: Label + ID, color: "#fabcbc" }]);
   ID++;
+  return ID-1;
 }
 
 function añadirestadonormal() {
@@ -558,22 +514,42 @@ function conectar(desde, hasta, label) {
       break;
     }
   }
+   var conexionrep = false;
+  for (var i = 0; i < contadoraristas.length; i++) {
+    if (contadoraristas[i].from ==desde&& contadoraristas[i].to==hasta) {
+      conexionrep= true;
+      break;
+    }
+  }
   console.log(aristarep);
-
-  if (desde == hasta && contadoraristas != 0 && aristarep == true) {
+console.log(contadoraristas);
+  if (desde == hasta && contadoraristas != 0 && aristarep == true&&operaciontransformarAFD==0) {
     for (var i = 0; i < contadoraristas.length; i++) {
       if (contadoraristas[i].from == contadoraristas[i].to) {
         var obtenerid = contadoraristas[i].id;
         var obtenerlabel = contadoraristas[i].label;
       }
     }
-    console.log(
-      "id=" + obtenerid + "///////" + "label=" + obtenerlabel + "," + label
-    );
+    console.log("id=" + obtenerid + "///////" + "label=" + obtenerlabel + "," + label);
     edges.updateOnly({ id: obtenerid, label: obtenerlabel + "," + label });
-  } else {
+  } else if (desde != hasta && contadoraristas != 0&&conexionrep==true &&operaciontransformarAFD==0) {
+    
+      for (var i = 0; i < contadoraristas.length; i++) {
+      if (contadoraristas[i].from ==desde && contadoraristas[i].to==hasta) {
+        console.log(i);
+        var obtenerid = contadoraristas[i].id;
+        var obtenerlabel = contadoraristas[i].label; 
+       
+      }
+    
+     
+    }
+     console.log("id=" + obtenerid + "///////" + "label=" + obtenerlabel + "," + label);
+    edges.updateOnly({ id: obtenerid, label: obtenerlabel + "," + label });
+   
+  } else{
     contadoraristas = contadoraristas.length + 1;
-    plog.info("Se conectan estado "+desde+" hacia estado "+hasta);
+    plog.info("Se conectan estado "+desde+" hacia estado "+hasta+" leyendo "+label);
     edges.add([
       {
         id: desde + "-" + contadoraristas,
@@ -585,7 +561,10 @@ function conectar(desde, hasta, label) {
     return;
   }
 }
+
 function archivo() {
+  
+  plog.info("Se descarga el log");
   var aux = "";
   var events = storage.getEvents();
   for (var i = 0; i < events.length - 1; i++) {
@@ -835,6 +814,119 @@ function recorrer(automata, text) {
     console.log("termina", recorre.to);
   }
 }
+//verificar(1);
+function verificar(automata) {
+  var finales=estadosfinalesvector(automata);
+  var inicial=estadoinicial(automata);
+  var normales=vectorintermedios();
+  console.log("empezo a verificar");
+
+  var vectorprueba=[];
+  var nodos = nodes.getIds();
+  var totales = nodes.get();
+  var arista = edges.get();
+  var cont = 0;
+  var cont2 = 0;
+  var contrecorrido = 0;
+  var recorre;
+  var aux= arista.filter(arista => arista.from == inicial.id);
+  var aristasinicial = arista.filter(arista => arista.from == inicial.id);
+  var total = arista.length;
+
+  console.log(
+    "aux",
+    aux,
+    "total",
+    total,
+    "inicial",
+    inicial,
+    "aristasinicial",
+    aristasinicial[0]
+  );
+  console.log(total);
+   vectorprueba.push(inicial.id);
+  for (let i = 0; i < finales.length; i++) {
+    
+    for (let j = 0; j < aristasinicial.length; j++) { 
+     
+      for (let k = 0; k < aux.length; k++) {
+          recorre = aux[k];
+          for (let l = 0; l < total; l++) {
+            if (recorre.to == finales[i].id) {
+           cont++;
+              console.log("llega a la meta")
+            vectorprueba.push(recorre.to);
+            break;
+          } else if (recorre.to == recorre.from) {
+            aux = arista.filter(arista => arista.from == recorre.to);
+            recorre = aux[k];
+            console.log("aux", aux);
+            break; //provicional
+          } else {
+            //console.log(recorre);
+            vectorprueba.push(recorre.to);
+            aux = arista.filter(arista => arista.from == recorre.to);
+            
+            recorre = aux[k];}
+        
+
+        console.log(finales[i].id, "==", vectorprueba);
+      }
+      if (recorre.to == finales[i].id) {
+
+        break;
+      }
+    }
+    //aux = arista.filter(arista => arista.from == recorre.to);
+    
+  }
+    console.log("estado", finales[i].label, "==", vectorprueba);
+  }
+  console.log("contador", cont, "<", finales.length);
+  //console.log("recorrido hasta el estado ",finales[i].label," es: ",vectorprueba);
+///////////////////////////////////////////////////////////////////////////////////////////segunda verificacion
+  console.log("////////////////////");
+  for(let s=0;s<nodos.length;s++){
+    
+    var aux2 = arista.filter(arista => arista.from == nodos[s]);
+    var aux3= arista.filter(arista => arista.to == nodos[s]&&arista.from!=nodos[s]);
+    console.log(aux3);
+    cont2=0;
+    for(let j=0;j<aux2.length;j++){
+    
+      if(aux2[j].from==aux2[j].to){
+        cont2++;
+      }
+      console.log(cont2);
+      //console.log(cont2,"==",aux2.length,"de",aux2[j].from); 
+      if(cont2==aux2.length && aux3.length==0){
+        Swal.fire({
+      icon: "warning",
+      title: "Error...",
+      text:
+        "Existe un camino que no llega a un estado final,intente crear el automata nuevamente"
+   });
+      plog.warn("Automata no cumple condiciones ");
+        return;
+      }
+    }
+  }
+   console.log("////////////////////");
+///////////////////////////////////////////////////////////////////////////////////////
+  if (cont == 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Error...",
+      text:
+        "Al menos un estado final es inalcanzable desde el estado inicial,intente crear el automata nuevamente"
+    });
+    plog.warn("Automata no cumple condiciones ");
+    //////////borrar va aqui
+  } else {
+    plog.info("El Automata cumple las condiciones");
+  }
+}
+
 function estadosfinalesvector(automata) {
   var nodos = nodes.get();
   var automata1;
@@ -866,7 +958,6 @@ function estadosfinalesvector(automata) {
       }
       if (nodos[i].color == "#fabcbc") vectorfinales.push(nodos[i]);
     }
-    plog.info("Se crea un vector con los estados finales del automata 1");
     return vectorfinales;
   } else {
     if (automata == 2) {
@@ -874,7 +965,6 @@ function estadosfinalesvector(automata) {
         console.log(nodes.get(i).color);
         if (nodes.get(i).color == "#fabcbc") vectorfinales.push(nodes.get(i));
       }
-      plog.info("Se crea un vector con los estados finales del automata 2");
       return vectorfinales;
     }
   }
@@ -900,26 +990,150 @@ function estadoinicial(automata) {
     }
   }
   if (automata == 1) {
-    plog.info("Se usa el estado inicial del automata 1");
     return automata1;
   }
   if (automata == 2) {
-    plog.info("Se usa el estado inicial del automata 2");
     return automata2;
   }
 }
-transformarAFDaER(1);
-function transformarAFDaER(automata){
+function borrarestadoconaristas(id){
+  
+  var aristas = edges.get();
+  var aristasdesde = aristas.filter(aristas => aristas.from == id);
+  var aristashasta = aristas.filter(aristas => aristas.to == id);
+  for (var i = 0; i<aristasdesde.length ; i++) { 
+            var x = aristasdesde.length;
+            while (x != 0) {
+              edges.remove(aristasdesde[x - 1].id);
+              x = x - 1;
+            }
+          }
+    for (var i = 0; i<aristashasta.length ; i++) { 
+            var x = aristashasta.length;
+            while (x != 0) {
+              edges.remove(aristashasta[x - 1].id);
+              x = x - 1;
+            }
+          }
+  nodes.remove(id);
+  plog.info("Se borra estado",id,"con todas sus transiciones");
+}
+
+function cambiomas(){
+  var aristas=edges.get();
+  console.log(aristas);
+         for(let i=0;i<aristas.length;i++){
+           var palabra=undefined;
+           var labelnuevo=[];
+           if(1<aristas[i].label.length){
+             for(let j=0;j<aristas[i].label.length;j++){
+               
+               if(aristas[i].label[j]==","){
+                 labelnuevo.push("+");
+               }else labelnuevo.push(aristas[i].label[j]);
+             }
+             for(let k=0;k<labelnuevo.length;k++){
+               if(palabra==undefined){
+                 var palabra=labelnuevo[k];
+               }else{
+                 palabra=palabra+labelnuevo[k];
+               }
+               
+             } console.log(palabra);
+               aristas[i].label=palabra;
+           }
+           
+         }
+    plog.info("Se intercambian , por + para mejor entendimiento ");
+
+}
+function vectorintermedios(){
+  
+ var nodos=nodes.get();
+ var vector=[];
+ for(let i=0;i<nodos.length;i++){
+   if(nodos[i].color=="#97C2FC"){
+   vector.push(nodos[i]); 
+    }
+  }
+  return vector;
+}
+async function botonER() {
+  var nodos = nodes.getIds();
+ if (nodos.length == 0) {
+    plog.warn(
+      "Se intento eliminar un automata cuando no hay ninguno,se cancela la operacion y se manda alerta "
+    );
+    Swal.fire({
+      icon: "warning",
+      title: "Error...",
+      text: "Para obtener la ER, debe existir un automata "
+    });
+    return;
+  }
+  plog.info("Se muestran opciones para obtener el ER");
+  const inputOptions = new Promise(resolve => {
+    setTimeout(() => {
+      resolve({
+        1: "Resultado directo",
+        2: "Paso a paso",
+      });
+    }, 100);
+  });
+  const { value: color } = await Swal.fire({
+    title: "Opciones para obtener ER:",
+    input: "radio",
+    allowOutsideClick: false,
+    inputOptions: inputOptions,
+    showCancelButton: true,
+    inputValidator: value => {
+      if (!value) {
+        return "Seleccione una opcion o cancele la operacion";
+      } else if (value == 1) {
+        transformarAFDaER(1,1);
+      }else if (value == 2) {
+        transformarAFDaER(1,2);
+      }
+}
+  });
+
+}
+//transformarAFDaER(1);
+async function transformarAFDaER(automata,value){
+  cambiomas();
     var arista = edges.get();
 //////////////////////////////////////////////////condicion estado inicial
   var qantiguo=estadoinicial(automata);
   var entradasinicial = arista.filter(arista => arista.to == qantiguo.id);
   if(entradasinicial.length!=0){
+     if (value==2){
+          alerta("Antiguo estado inicial "+qantiguo.id+" cuenta con entradas",3000,"info");
+       await sleep(3000);
+        }
+    plog.info("Antiguo estado inicial "+qantiguo.id+" cuenta con entradas");
      var qinicialnuevo=añadirestadoinicial();
-  conectar(qinicialnuevo,qantiguo.id,"ε");
-  nodes.updateOnly({ id: qantiguo.id,  color:"#97C2FC" }); 
+    if (value==2){
+          alerta("Se agrega un nuevo estado inicial",5000,"success");
+             await sleep(5000);
+        }
+    conectar(qinicialnuevo,qantiguo.id,"ε");
+    if (value==2){
+          alerta("Se conecta nuevo estado inicial "+qinicialnuevo+" hacia antiguo estado inicial "+qantiguo.id+" con transicion vacia",5000,"success");
+             await sleep(5000);
+        }
+  
+  nodes.updateOnly({ id: qantiguo.id,  color:"#97C2FC" });
+    if (value==2){
+          alerta("Antiguo estado inicial deja de serlo",4000,"info");
+      await sleep(4000);
+        }
+    plog.info("Antiguo estado inicial deja de serlo");
+    
+    
   }
+      
   /////////////////////////////////////////////////condicion estados finales
+  
     var estadosfinales=estadosfinalesvector(automata);
   var cantefinalesantes=estadosfinales.length;
   var añadirnuevofinal=0;
@@ -930,77 +1144,160 @@ function transformarAFDaER(automata){
     console.log(salidasfinales.length);
 if(salidasfinales.length!=0){
   if(añadirnuevofinal==0){
-    var qfinalnuevo=añadirestadofinal();
+    if (value==2){
+          alerta("Existe al menos una salida en un estado final",3000,"info");
+      await sleep(3000);
+        }
+        var qfinalnuevo=añadirestadofinal();
+
+        plog.info("Existe al menos una salida en un estado final");
+    if (value==2){
+          alerta("Se agrega un nuevo estado final",3000,"success");
+      await sleep(3000);
+        }
+       plog.info("Se agrega un estado final para convertir a ER");
    añadirnuevofinal=1;
   }
   cambiarcoloresfinales=1;
-    conectar(estadosfinales[i].id,qfinalnuevo,"ε");
+   break;
 }
   }
+    if(salidasfinales.length!=0){
+     for(let i=0;i<estadosfinales.length;i++){
+          conectar(estadosfinales[i].id,qfinalnuevo,"ε");
+       if (value==2){
+          alerta("Se conecta antiguo estado final "+estadosfinales[i].id+" a nuevo estado final "+qfinalnuevo+" con transicion vacia",4000,"success");
+       await sleep(4000);
+        }
+     }
+     
+    }
+    
+    
+    
+    
+    
+    
+  
   if(cambiarcoloresfinales==1){
      for(let i=0;i<estadosfinales.length;i++){
                  nodes.updateOnly({ id: estadosfinales[i].id,  color:"#97C2FC" });
      }
-
+    if (value==2){
+          alerta("Antiguos estados finales dejan de serlo",4000,"success");
+       await sleep(4000);
+        }
+    plog.info("Antiguos estados finales dejan de serlo");
   }
+  
   operaciontransformarAFD=1;
-/////////////////////////////////////////////////////
-//concatenacionER(cantefinalesantes);
-  
+  siguientes(vectorintermedios(),value);
 }
-function siguientes(intermedio){
-  var aristas;
-  for(let i=0;i<intermedio.length-3;i++){
-   aristas=edges.get();
-   var aux=aristas.filter(aristas => aristas.from == intermedio[i].id&&aristas.from!=aristas.to);
-  console.log(i,aux);
-    util(5,intermedio[i].id,aux,0);
-        
+async function alerta(mensaje,tiempo,tipo){
+  const Toast = Swal.mixin({
+          toast: true,
+          position: "top-start",
+          showConfirmButton: false,
+          timer: tiempo,
+          timerProgressBar: true,
+          didOpen: toast => {
+            //toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+            //toast.addEventListener("mouseleave", Swal.disableButtons);
+          }
+        });
 
- 
-  } 
+    Toast.fire({
+          icon: tipo,
+          title: mensaje
+        });
+  await sleep(tiempo);
+}
+
+
   
+   
+
+async function siguientes(intermedio,value){
+  var aristas;
+  var nodos=nodes.get();
+  for(let i=0;i<nodos.length;i++){
+    if(nodos[i].color=="#C2FABC"){
+      var inicialutil=nodos[i].id;
+      break;
+    }
+  }
+  console.log("////////////////////////////////////////////////////////////inicial: "+inicialutil);
+  if (value==2){
+          alerta("Desde nuevo estado inicial "+inicialutil+" hasta nuevo estado final existen "+intermedio.length+" estados intermedios",5000,"info");
+       await sleep(5000);
+        }
+      plog.info("Desde nuevo estado inicial "+inicialutil+" hasta nuevo estado final existen "+intermedio.length+" estados intermedios");
+  for(let i=0;i<intermedio.length;i++){
+   aristas=edges.get();  
+    var aux=aristas.filter(aristas => aristas.from == intermedio[i].id&&aristas.from!=aristas.to);
+    
+     await util(inicialutil,intermedio[i].id,aux,0,value);
+    ordenararistasmismodestino(inicialutil);
+     ordenararistas();
+  
+ } 
  }
-function util(estadoi,intermedio,cantidadfinales,i){
+
+function sleep(ms) {
+  return new Promise(
+    resolve => setTimeout(resolve, ms)
+  );
+}
+async function util(estadoi,intermedio,cantidadfinales,i,value){
   console.log("////////////////////////intermedio "+intermedio);
-  
+  console.log(cantidadfinales[i]);
   var final=cantidadfinales[i].to;
-  console.log("hasta "+final);
   var aristas=edges.get();
   console.log(aristas);
+  var expresion;
   var primera=aristas.filter(aristas => aristas.from == estadoi);
-      for(let i=0;i<primera.length;i++){
-        if(primera[i].to=intermedio){
-          primera=primera[i];
+   for(let i=0;i<primera.length;i++){
+        if(primera[i].to==intermedio){
+          expresion="("+primera[i].label+")";
+          if (value==2){
+          alerta("Existe camino entre estado "+estadoi+" y estado intermedio "+intermedio,3000,"ino");
+      await sleep(3000);
+        }
+          plog.info("Existe camino entre "+estadoi+" y estado intermedio "+intermedio);
           break;
         }
-      }
-
-  var prueba = aristas.filter(aristas => aristas.from == estadoi);
-  console.log(prueba);
+      } 
+ console.log(expresion);
   
   
-console.log("primera arista "+primera.label);
-  var expresion=primera.label;
     var aristasintermedio = aristas.filter(aristas => aristas.from == intermedio);
     for(let i=0;i<aristasintermedio.length;i++){
       if(aristasintermedio[i].from==aristasintermedio[i].to){
-        expresion=expresion+"("+aristasintermedio[i].label+"*"+")";
+        expresion=expresion+"("+aristasintermedio[i].label+")"+"*";
+        if (value==2){
+          alerta("Existe bucle en estado intermedio "+intermedio,3000,"info");
+      await sleep(3000);
+        }
+        plog.info("Existe bucle en estado intermedio "+intermedio);
       }
     }
    var aristasentrante = aristas.filter(aristas => aristas.to == intermedio&&aristas.from!=estadoi&&aristas.from==final);
-   console.log(aristasentrante);
   if(aristasentrante.length!=0){
     for(let i=0;i<aristasintermedio.length;i++){
     for(let j=0;j<aristasentrante.length;j++){
       if(aristasintermedio[i].to==final&&aristasentrante[j].to==intermedio&&aristasentrante[j].to!=aristasentrante[j].from){
-       console.log(aristasintermedio[i]);
-        expresion=expresion+"("+aristasintermedio[i].label+aristasentrante[j].label+")*";
+        expresion=expresion+"["+"("+aristasintermedio[i].label+")"+"("+aristasentrante[j].label+")"+"]*";
+        if (value==2){
+          alerta("Existe un camino de ida y vuelta desde "+intermedio+" hasta "+final,3000,"info");
+      await sleep(3000);
+        }
+        plog.info("Existe un camino de ida y vuelta desde "+intermedio+" hasta "+final);
         break;
       }
     }
       
-      console.log(expresion);
+ 
     }
   }
  
@@ -1008,27 +1305,99 @@ console.log("primera arista "+primera.label);
       if(aristasintermedio[i].to==final){
         expresion=expresion+"("+aristasintermedio[i].label+")";
       }
-      console.log(expresion);
     }
-   
+  
+   expresion=reducirER(expresion);
+  console.log(expresion);
+  if (value==2){
+          alerta("La transicion entre "+estadoi+" y estado "+final+" es "+expresion,3000,"info");
+      await sleep(3000);
+        }
+  plog.info("La transicion entre "+estadoi+" y estado "+final+" es "+expresion);
+     conectar(estadoi,final,expresion);
+      if (value==2){
+          alerta("Se conecta con expresion desde "+estadoi+" hasta estado "+final,3000,"success");
+      await sleep(3000);
+        }
+  plog.info("Se conecta con expresion desde "+estadoi+" hasta estado "+final);
     
-    if(i<cantidadfinales.length-1){
-      
-      util(estadoi,intermedio,cantidadfinales,i+1);
-    }else{
-      borrarestadoconaristas(intermedio);
-      console.log("se borra "+intermedio);
-    } 
-      conectar(estadoi,final,expresion);
+
+    if(i<(cantidadfinales.length-1)){
+      await util(estadoi,intermedio,cantidadfinales,i+1,value);
+    }else{borrarestadoconaristas(intermedio);
+    if (value==2){        
+      var mensaje="Se elimina estado "+intermedio+" junto a todas sus transiciones";
+  alerta(mensaje,3000,"info");   
+    await sleep(3000);
+  }
+ plog.info("Se elimina estado "+intermedio+" junto a todas sus transiciones");
+    }
+  
+
 }
-function reducirER(label){
-  var labelgeneral="ε";
-  label = label.replace(new RegExp(labelgeneral,"g") ,"");
-  for(let i=0;i<label.length;i++){
-  label=label.replace("()","");}
+//////////////////////////////////////
+function reducirER(label) {
+  var labelgeneral = "ε";
+  label = label.replace(new RegExp(labelgeneral, "g"), "");
+  for (let i = 0; i < label.length; i++) {
+    label = label.replace("()", "");
+  }
+  plog.info("Se reduce expresion quitando los ε");
   console.log(label);
   return label;
+}   
+
+function ordenararistas(){
+  var aristas=edges.get();
+  for(let i=0;i<ID-1;i++){
+      var filtro=aristas.filter(aristas => aristas.from == i+1);
+    for(let j=0;j<filtro.length;j++){
+    var paraconectar=filtro[j];
+      var nuevoid=filtro[j].from+"-"+(j+1);
+      edges.remove(filtro[j].id);
+       edges.add([
+      {
+        id: nuevoid,
+        from: paraconectar.from,
+        to: paraconectar.to,
+        label:paraconectar.label
+      }
+    ]);
+    }
+  }
 }
+
+function ordenararistasmismodestino(estadoi){
+    var aristas=edges.get();
+  
+      var filtro=aristas.filter(aristas => aristas.from == estadoi);
+            
+  
+  if(1<filtro.length){
+  for(let j=0;j<filtro.length;j++){
+  for(let k=0;k<filtro.length;k++){
+    if(filtro[k].id!=undefined&& filtro[j].id!=filtro[k].id && filtro[j].to==filtro[k].to){
+      edges.remove(filtro[j].id);
+      edges.remove(filtro[k].id);
+      var nuevoid=filtro[j].id;
+         edges.add([
+      {
+        id: nuevoid,
+        from: filtro[j].from,
+        to: filtro[j].to,
+        label:"["+filtro[j].label+"]"+"+"+"["+filtro[k].label+"]"
+      }
+    ]);
+      break;
+    }
+  }
+  }
+}
+  
+ }
+    
+
+  
 ///////////////////////////////////////////////////////////////////////////////////////////////
 var network = new vis.Network(container, data, xoptions);
 network.setOptions(xoptions);
